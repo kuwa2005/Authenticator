@@ -240,6 +240,14 @@ async function getTotp(text: string, silent = false) {
   }
 }
 
+async function setSessionToken(tokenKey: string, value?: string) {
+  if (!value) {
+    await chrome.storage.session.remove(tokenKey);
+    return;
+  }
+  await chrome.storage.session.set({ [tokenKey]: value });
+}
+
 function getBackupToken(service: string) {
   if (isChrome && service === "drive") {
     chrome.identity.getAuthToken(
@@ -251,7 +259,8 @@ function getBackupToken(service: string) {
         if (!value) {
           return false;
         }
-        UserSettings.items.driveToken = value;
+        setSessionToken("driveToken", value);
+        UserSettings.items.driveToken = undefined;
         UserSettings.commitItems();
         chrome.runtime.sendMessage({ action: "drivetoken", value });
         return true;
@@ -268,13 +277,8 @@ function getBackupToken(service: string) {
         "&redirect_uri=" +
         redirUrl;
     } else if (service === "drive") {
-      if (navigator.userAgent.indexOf("Edg") !== -1) {
-        redirUrl = encodeURIComponent("https://authenticator.cc/oauth-edge");
-      } else if (isFirefox) {
-        redirUrl = encodeURIComponent(chrome.identity.getRedirectURL());
-      } else {
-        redirUrl = encodeURIComponent("https://authenticator.cc/oauth");
-      }
+      // Keep OAuth code inside extension redirect URI.
+      redirUrl = encodeURIComponent(chrome.identity.getRedirectURL());
 
       authUrl =
         "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&access_type=offline&client_id=" +
@@ -320,7 +324,8 @@ function getBackupToken(service: string) {
             const value = kvMatches[2];
             if (key === "access_token") {
               if (service === "dropbox") {
-                UserSettings.items.dropboxToken = value;
+                setSessionToken("dropboxToken", value);
+                UserSettings.items.dropboxToken = undefined;
                 UserSettings.commitItems();
                 uploadBackup("dropbox");
                 return;
@@ -354,7 +359,8 @@ function getBackupToken(service: string) {
                   if (res.error) {
                     console.error(res.error_description);
                   } else {
-                    UserSettings.items.driveToken = res.access_token;
+                    await setSessionToken("driveToken", res.access_token);
+                    UserSettings.items.driveToken = undefined;
                     UserSettings.items.driveRefreshToken = res.refresh_token;
                     UserSettings.commitItems();
                     success = true;
@@ -379,6 +385,19 @@ function getBackupToken(service: string) {
                       Accept: "application/json",
                       "Content-Type": "application/x-www-form-urlencoded",
                     },
+                    body:
+                      `client_id=${getCredentials().onedrive.client_id}` +
+                      `&code=${value}` +
+                      `&redirect_uri=${redirUrl}` +
+                      `&grant_type=authorization_code` +
+                      `&client_secret=${encodeURIComponent(
+                        getCredentials().onedrive.client_secret
+                      )}` +
+                      `&scope=https%3A%2F%2Fgraph.microsoft.com%2FFiles.ReadWrite${
+                        UserSettings.items.oneDriveBusiness !== true
+                          ? ".AppFolder"
+                          : ""
+                      }%20https%3A%2F%2Fgraph.microsoft.com%2FUser.Read%20offline_access`,
                   }
                 );
 
@@ -387,7 +406,8 @@ function getBackupToken(service: string) {
                   if (res.error) {
                     console.error(res.error_description);
                   } else {
-                    UserSettings.items.oneDriveToken = res.access_token;
+                    await setSessionToken("oneDriveToken", res.access_token);
+                    UserSettings.items.oneDriveToken = undefined;
                     UserSettings.items.oneDriveRefreshToken = res.refresh_token;
                     UserSettings.commitItems();
                     success = true;

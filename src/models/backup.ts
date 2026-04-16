@@ -3,10 +3,34 @@ import { Encryption } from "./encryption";
 import { UserSettings } from "./settings";
 import { EntryStorage } from "./storage";
 
+async function getSessionToken(tokenKey: string): Promise<string> {
+  const sessionData = await chrome.storage.session.get(tokenKey);
+  const token = sessionData[tokenKey];
+  return typeof token === "string" ? token : "";
+}
+
+async function setSessionToken(tokenKey: string, token: string) {
+  if (!token) {
+    await chrome.storage.session.remove(tokenKey);
+    return;
+  }
+  await chrome.storage.session.set({ [tokenKey]: token });
+}
+
 export class Dropbox implements BackupProvider {
   private async getToken() {
     await UserSettings.updateItems();
-    return UserSettings.items.dropboxToken || "";
+    const sessionToken = await getSessionToken("dropboxToken");
+    if (sessionToken) {
+      return sessionToken;
+    }
+    const legacyToken = UserSettings.items.dropboxToken || "";
+    if (legacyToken) {
+      setSessionToken("dropboxToken", legacyToken);
+      UserSettings.items.dropboxToken = undefined;
+      await UserSettings.commitItems();
+    }
+    return legacyToken;
   }
 
   async upload(encryption: Encryption) {
@@ -45,6 +69,7 @@ export class Dropbox implements BackupProvider {
           xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
               if (xhr.status === 401) {
+                setSessionToken("dropboxToken", "");
                 UserSettings.items.dropboxToken = undefined;
                 UserSettings.items.dropboxRevoked = true;
                 UserSettings.commitItems();
@@ -84,6 +109,7 @@ export class Dropbox implements BackupProvider {
       xhr.onreadystatechange = () => {
         if (xhr.readyState === 4) {
           if (xhr.status === 401) {
+            setSessionToken("dropboxToken", "");
             UserSettings.items.dropboxToken = undefined;
             UserSettings.items.dropboxRevoked = true;
             UserSettings.commitItems();
@@ -114,8 +140,15 @@ export class Dropbox implements BackupProvider {
 export class Drive implements BackupProvider {
   private async getToken() {
     await UserSettings.updateItems();
+    const sessionToken = await getSessionToken("driveToken");
+    const effectiveToken = sessionToken || UserSettings.items.driveToken;
+    if (effectiveToken && !sessionToken) {
+      setSessionToken("driveToken", effectiveToken);
+      UserSettings.items.driveToken = undefined;
+      await UserSettings.commitItems();
+    }
     if (
-      !UserSettings.items.driveToken ||
+      !effectiveToken ||
       (await new Promise(
         (
           resolve: (value: boolean) => void,
@@ -125,7 +158,7 @@ export class Drive implements BackupProvider {
           xhr.open("GET", "https://www.googleapis.com/drive/v3/files");
           xhr.setRequestHeader(
             "Authorization",
-            "Bearer " + UserSettings.items.driveToken
+            "Bearer " + effectiveToken
           );
           xhr.onreadystatechange = async () => {
             if (xhr.readyState === 4) {
@@ -141,11 +174,12 @@ export class Drive implements BackupProvider {
                       // Clear invalid token from
                       // chrome://identity-internals/
                       await chrome.identity.removeCachedAuthToken({
-                        token: UserSettings.items.driveToken as string,
+                        token: effectiveToken as string,
                       });
                     }
+                    setSessionToken("driveToken", "");
                     UserSettings.items.driveToken = undefined;
-                    UserSettings.commitItems();
+                    await UserSettings.commitItems();
                     resolve(true);
                   }
                 } else {
@@ -164,7 +198,7 @@ export class Drive implements BackupProvider {
     ) {
       await this.refreshToken();
     }
-    return UserSettings.items.driveToken;
+    return await getSessionToken("driveToken");
   }
 
   private async refreshToken() {
@@ -182,7 +216,8 @@ export class Drive implements BackupProvider {
             scopes: ["https://www.googleapis.com/auth/drive.file"],
           },
           (token) => {
-            UserSettings.items.driveToken = token;
+            setSessionToken("driveToken", token || "");
+            UserSettings.items.driveToken = undefined;
             if (!token) {
               UserSettings.items.driveRevoked = true;
             }
@@ -228,7 +263,8 @@ export class Drive implements BackupProvider {
                   console.error(res.error_description);
                   resolve(false);
                 } else {
-                  UserSettings.items.driveToken = res.access_token;
+                  setSessionToken("driveToken", res.access_token);
+                  UserSettings.items.driveToken = undefined;
                   UserSettings.commitItems();
                   resolve(true);
                 }
@@ -269,6 +305,7 @@ export class Drive implements BackupProvider {
           xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
               if (xhr.status === 401) {
+                setSessionToken("driveToken", "");
                 UserSettings.items.driveToken = undefined;
                 UserSettings.commitItems();
                 return resolve(false);
@@ -317,6 +354,7 @@ export class Drive implements BackupProvider {
           xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
               if (xhr.status === 401) {
+                setSessionToken("driveToken", "");
                 UserSettings.items.driveToken = undefined;
                 UserSettings.commitItems();
                 return resolve(false);
@@ -449,6 +487,7 @@ export class Drive implements BackupProvider {
       xhr.onreadystatechange = () => {
         if (xhr.readyState === 4) {
           if (xhr.status === 401) {
+            setSessionToken("driveToken", "");
             UserSettings.items.driveToken = undefined;
             UserSettings.commitItems();
             resolve(
@@ -478,8 +517,15 @@ export class Drive implements BackupProvider {
 export class OneDrive implements BackupProvider {
   private async getToken() {
     await UserSettings.updateItems();
+    const sessionToken = await getSessionToken("oneDriveToken");
+    const effectiveToken = sessionToken || UserSettings.items.oneDriveToken;
+    if (effectiveToken && !sessionToken) {
+      setSessionToken("oneDriveToken", effectiveToken);
+      UserSettings.items.oneDriveToken = undefined;
+      await UserSettings.commitItems();
+    }
     if (
-      !UserSettings.items.oneDriveToken ||
+      !effectiveToken ||
       (await new Promise(
         (
           resolve: (value: boolean) => void,
@@ -492,7 +538,7 @@ export class OneDrive implements BackupProvider {
           );
           xhr.setRequestHeader(
             "Authorization",
-            "Bearer " + UserSettings.items.oneDriveToken
+            "Bearer " + effectiveToken
           );
           xhr.onreadystatechange = async () => {
             if (xhr.readyState === 4) {
@@ -500,8 +546,9 @@ export class OneDrive implements BackupProvider {
                 const res = JSON.parse(xhr.responseText);
                 if (res.error) {
                   if (res.error.code === 401) {
+                    setSessionToken("oneDriveToken", "");
                     UserSettings.items.oneDriveToken = undefined;
-                    UserSettings.commitItems();
+                    await UserSettings.commitItems();
                     resolve(true);
                   }
                 } else {
@@ -520,7 +567,7 @@ export class OneDrive implements BackupProvider {
     ) {
       await this.refreshToken();
     }
-    return UserSettings.items.oneDriveToken;
+    return await getSessionToken("oneDriveToken");
   }
 
   private async refreshToken() {
@@ -555,7 +602,8 @@ export class OneDrive implements BackupProvider {
                 console.error(res.error_description);
                 resolve(false);
               } else {
-                UserSettings.items.oneDriveToken = res.access_token;
+                setSessionToken("oneDriveToken", res.access_token);
+                UserSettings.items.oneDriveToken = undefined;
                 UserSettings.commitItems();
                 resolve(true);
               }
@@ -612,6 +660,7 @@ export class OneDrive implements BackupProvider {
           xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
               if (xhr.status === 401) {
+                setSessionToken("oneDriveToken", "");
                 UserSettings.removeItem("oneDriveToken");
                 return resolve(false);
               }
@@ -652,6 +701,7 @@ export class OneDrive implements BackupProvider {
       xhr.onreadystatechange = () => {
         if (xhr.readyState === 4) {
           if (xhr.status === 401) {
+            setSessionToken("oneDriveToken", "");
             UserSettings.items.oneDriveToken = undefined;
             UserSettings.commitItems();
             resolve(

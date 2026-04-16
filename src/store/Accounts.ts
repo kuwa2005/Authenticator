@@ -645,6 +645,11 @@ export class Accounts implements Module {
             UserSettings.items.storageLocation === StorageLocation.Local &&
             newStorageLocation === StorageLocation.Sync
           ) {
+            const keys = await BrowserStorage.getKeys();
+            const hasEncryptionKeys = isOldKey(keys) || keys.length > 0;
+            if (!hasEncryptionKeys) {
+              throw " Encryption is required before enabling sync storage.";
+            }
             const localData = await chrome.storage.local.get();
             if (localData?.UserSettings) {
               delete localData.UserSettings;
