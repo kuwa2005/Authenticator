@@ -159,10 +159,7 @@ export class Drive implements BackupProvider {
         ) => {
           const xhr = new XMLHttpRequest();
           xhr.open("GET", "https://www.googleapis.com/drive/v3/files");
-          xhr.setRequestHeader(
-            "Authorization",
-            "Bearer " + effectiveToken
-          );
+          xhr.setRequestHeader("Authorization", "Bearer " + effectiveToken);
           xhr.onreadystatechange = async () => {
             if (xhr.readyState === 4) {
               try {
@@ -542,10 +539,7 @@ export class OneDrive implements BackupProvider {
             "GET",
             "https://graph.microsoft.com/v1.0/me/drive/special/approot"
           );
-          xhr.setRequestHeader(
-            "Authorization",
-            "Bearer " + effectiveToken
-          );
+          xhr.setRequestHeader("Authorization", "Bearer " + effectiveToken);
           xhr.onreadystatechange = async () => {
             if (xhr.readyState === 4) {
               try {

@@ -174,7 +174,9 @@ async function getTotp(text: string, silent = false) {
           digits = Number(parameter[1]);
           digits = isNaN(digits) || digits === 0 ? 6 : digits;
         } else if (parameter[0].toLowerCase() === "algorithm") {
-          const rawAlgorithm = decodeURIComponent(parameter[1] || "").toUpperCase();
+          const rawAlgorithm = decodeURIComponent(
+            parameter[1] || ""
+          ).toUpperCase();
           if (["SHA1", "SHA256", "SHA512"].includes(rawAlgorithm)) {
             algorithm = rawAlgorithm;
           }
@@ -455,22 +457,12 @@ async function uploadBackup(service: string) {
   }
 }
 
-// Show issue page after first install
+// Do not open external pages after install.
 chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason !== "install") {
     return;
   } else if (await ManagedStorage.get("disableInstallHelp", false)) {
     return;
-  }
-
-  let url: string | null = null;
-
-  if (isChrome) {
-    url = "https://otp.ee/chromeissues";
-  }
-
-  if (url) {
-    chrome.tabs.create({ url, active: true });
   }
 
   // https://stackoverflow.com/a/56483156

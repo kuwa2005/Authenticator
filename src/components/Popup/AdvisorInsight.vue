@@ -22,8 +22,7 @@ export default Vue.extend({
     dismiss(insight: AdvisorInsight) {
       this.$store.commit("advisor/dismissInsight", insight.id);
     },
-    openLink(url: string) {
-      window.open(url, "_blank");
+    openLink(_url: string) {
       return;
     },
   },

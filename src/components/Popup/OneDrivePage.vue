@@ -28,8 +28,8 @@
       </a-button>
       <div class="text" v-show="!backupToken">
         <a
-          v-on:click="openLink('https://otp.ee/onedriveperms')"
-          href="https://otp.ee/onedriveperms"
+          href="#"
+          v-on:click.prevent="openLink('https://otp.ee/onedriveperms')"
           >{{ i18n.onedrive_business_perms }}</a
         >
       </div>
@@ -80,8 +80,7 @@ export default Vue.extend({
     },
   },
   methods: {
-    openLink(url: string) {
-      window.open(url, "_blank");
+    openLink(_url: string) {
       return;
     },
     getBackupToken(business?: boolean) {

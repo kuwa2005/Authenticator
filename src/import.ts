@@ -203,7 +203,7 @@ export async function getEntryDataFromOTPAuthPerLine(importCode: string) {
   let failedCount = 0;
   let succeededCount = 0;
   for (let i = 0; i < lines.length; i++) {
-    let item = lines[i].trim();
+    const item = lines[i].trim();
     if (item.startsWith("otpauth-migration:")) {
       const migrationData = getOTPAuthPerLineFromOPTAuthMigration(item);
       for (const line of migrationData) {

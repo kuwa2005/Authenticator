@@ -80,8 +80,7 @@ export default Vue.extend({
   },
   computed,
   methods: {
-    openLink(url: string) {
-      window.open(url, "_blank");
+    openLink(_url: string) {
       return;
     },
     isMatchedEntry(entry: OTPEntry) {

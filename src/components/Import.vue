@@ -27,9 +27,7 @@
       <div>
         <p id="import_info">
           {{ i18n.otp_backup_inform }}
-          <a href="https://otp.ee/otpbackup" target="_blank">{{
-            i18n.otp_backup_learn
-          }}</a>
+          <a href="#" v-on:click.prevent>{{ i18n.otp_backup_learn }}</a>
         </p>
       </div>
       <component v-bind:is="importType" />

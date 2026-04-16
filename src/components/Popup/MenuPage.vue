@@ -46,22 +46,14 @@
         </p>
       </div>
       <div class="menuList">
-        <p v-bind:title="i18n.feedback" v-on:click="openHelp()">
-          <span><IconComments /></span>{{ i18n.feedback }}
-        </p>
-        <p
-          v-bind:title="i18n.translate"
-          v-on:click="openLink('https://otp.ee/translate')"
-        >
-          <span><IconGlobe /></span>{{ i18n.translate }}
-        </p>
-        <p
-          v-bind:title="i18n.source"
-          v-on:click="openLink('https://otp.ee/sourcecode')"
-        >
+        <p v-bind:title="i18n.source" v-on:click="openSourceRepository()">
           <span><IconCode /></span>{{ i18n.source }}
         </p>
-        <a href="licenses.html" target="_blank" style="text-decoration: none">
+        <a
+          href="#"
+          v-on:click.prevent="openAboutReadme()"
+          style="text-decoration: none"
+        >
           <p v-bind:title="i18n.about">
             <span><IconInfo /></span>{{ i18n.about }}
           </p>
@@ -83,12 +75,17 @@ import IconLock from "../../../svg/lock.svg";
 import IconSync from "../../../svg/sync.svg";
 import IconWrench from "../../../svg/wrench.svg";
 import IconAdvisor from "../../../svg/lightbulb.svg";
-import IconComments from "../../../svg/comments.svg";
-import IconGlobe from "../../../svg/globe.svg";
 import IconCode from "../../../svg/code.svg";
 import IconClipboardCheck from "../../../svg/clipboard-check.svg";
-import { isFirefox, isSafari } from "../../browser";
+import { isSafari } from "../../browser";
 import { UserSettings } from "../../models/settings";
+
+/** Current repository URL (menu: Source). */
+const SOURCE_REPOSITORY_URL = "https://github.com/kuwa2005/Authenticator";
+
+/** README on GitHub (menu: About this app). */
+const ABOUT_README_URL =
+  "https://github.com/kuwa2005/Authenticator?tab=readme-ov-file#authenticator---";
 
 export default Vue.extend({
   components: {
@@ -100,8 +97,6 @@ export default Vue.extend({
     IconSync,
     IconWrench,
     IconAdvisor,
-    IconComments,
-    IconGlobe,
     IconCode,
     IconClipboardCheck,
   },
@@ -119,25 +114,11 @@ export default Vue.extend({
     hideMenu() {
       this.$store.commit("style/hideMenu");
     },
-    openHelp() {
-      let url = "https://otp.ee/chromeissues";
-
-      if (navigator.userAgent.indexOf("Firefox") !== -1) {
-        url = "https://otp.ee/firefoxissues";
-      } else if (navigator.userAgent.indexOf("Edg") !== -1) {
-        url = "https://otp.ee/edgeissues";
-      }
-
-      const feedbackURL = this.$store.state.menu.feedbackURL;
-      if (typeof feedbackURL === "string" && feedbackURL) {
-        url = feedbackURL;
-      }
-
-      chrome.tabs.create({ url });
+    openSourceRepository() {
+      chrome.tabs.create({ url: SOURCE_REPOSITORY_URL, active: true });
     },
-    openLink(url: string) {
-      window.open(url, "_blank");
-      return;
+    openAboutReadme() {
+      chrome.tabs.create({ url: ABOUT_README_URL, active: true });
     },
     showInfo(tab: string) {
       if (this.$store.getters["accounts/currentlyEncrypted"]) {

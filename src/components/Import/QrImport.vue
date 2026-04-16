@@ -150,7 +150,12 @@ async function getOtpUrlFromQrFile(file: File): Promise<string | null> {
             canvas.height = h;
             ctx.drawImage(image, 0, 0, w, h);
 
-            const qrImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const qrImageData = ctx.getImageData(
+              0,
+              0,
+              canvas.width,
+              canvas.height
+            );
             const jsQrCode = jsQR(
               qrImageData.data,
               canvas.width,
