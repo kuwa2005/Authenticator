@@ -63,9 +63,12 @@ export class Dropbox implements BackupProvider {
             autorename: true,
           };
           xhr.open("POST", url);
+          xhr.timeout = 10000;
           xhr.setRequestHeader("Authorization", "Bearer " + token);
           xhr.setRequestHeader("Content-type", "application/octet-stream");
           xhr.setRequestHeader("Dropbox-API-Arg", JSON.stringify(apiArg));
+          xhr.onerror = () => resolve(false);
+          xhr.ontimeout = () => resolve(false);
           xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
               if (xhr.status === 401) {
@@ -417,11 +420,14 @@ export class Drive implements BackupProvider {
             "POST",
             "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart"
           );
+          xhr.timeout = 10000;
           xhr.setRequestHeader("Authorization", "Bearer " + token);
           xhr.setRequestHeader(
             "Content-type",
             "multipart/related; boundary=segment_marker"
           );
+          xhr.onerror = () => resolve(false);
+          xhr.ontimeout = () => resolve(false);
           xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
               if (xhr.status === 401) {
@@ -655,8 +661,11 @@ export class OneDrive implements BackupProvider {
             "PUT",
             `https://graph.microsoft.com/v1.0/me/drive/special/approot:/${now}.json:/content`
           );
+          xhr.timeout = 10000;
           xhr.setRequestHeader("Authorization", "Bearer " + token);
           xhr.setRequestHeader("Content-type", "application/octet-stream");
+          xhr.onerror = () => resolve(false);
+          xhr.ontimeout = () => resolve(false);
           xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
               if (xhr.status === 401) {
