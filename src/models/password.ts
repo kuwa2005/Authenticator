@@ -1,4 +1,5 @@
 import { BrowserStorage, isOldKey } from "./storage";
+import { postMessageToArgonSandbox } from "../utils/argonSandbox";
 
 export async function argonHash(
   value: string,
@@ -15,15 +16,10 @@ export async function argonHash(
     throw new Error("argon-sandbox missing!");
   }
 
-  const argonPromise: Promise<string | undefined> = new Promise((resolve) => {
-    window.addEventListener("message", (response) => {
-      resolve(response.data.response);
-    });
-    // @ts-expect-error bad typings
-    iframe.contentWindow.postMessage(message, "*");
-  });
-
-  return argonPromise;
+  return postMessageToArgonSandbox<string | undefined>(
+    iframe as HTMLIFrameElement,
+    message
+  );
 }
 
 export async function argonVerify(
@@ -41,15 +37,10 @@ export async function argonVerify(
     throw new Error("argon-sandbox missing!");
   }
 
-  const argonPromise: Promise<boolean> = new Promise((resolve) => {
-    window.addEventListener("message", (response) => {
-      resolve(response.data.response);
-    });
-    // @ts-expect-error bad typings
-    iframe.contentWindow.postMessage(message, "*");
-  });
-
-  return argonPromise;
+  return postMessageToArgonSandbox<boolean>(
+    iframe as HTMLIFrameElement,
+    message
+  );
 }
 
 // Verify a password using keys in BrowserStorage

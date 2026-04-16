@@ -1,6 +1,13 @@
 import argon2 from "argon2-browser";
 
 window.addEventListener("message", (event) => {
+  if (event.source !== window.parent) {
+    return;
+  }
+  if (event.origin !== window.location.origin) {
+    return;
+  }
+
   const message = event.data;
   const source = event.source as Window;
 

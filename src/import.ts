@@ -7,6 +7,11 @@ import { Encryption } from "./models/encryption";
 import { EntryStorage } from "./models/storage";
 import { getOTPAuthPerLineFromOPTAuthMigration } from "./models/migration";
 import * as CryptoJS from "crypto-js";
+import {
+  MAX_BACKUP_IMPORT_TEXT_CHARS,
+  MAX_OTPAUTH_IMPORT_LINES,
+} from "./constants/importLimits";
+import { postMessageToArgonSandbox } from "./utils/argonSandbox";
 
 async function init() {
   // i18n
@@ -143,21 +148,18 @@ async function findAndUnlockKey(
     return null;
   }
 
-  const rawHash = await new Promise((resolve: (value: string) => void) => {
-    const iframe = document.getElementById("argon-sandbox");
-    const message = {
+  const iframe = document.getElementById("argon-sandbox");
+  if (!iframe) {
+    throw new Error("argon-sandbox missing!");
+  }
+  const rawHash = await postMessageToArgonSandbox<string>(
+    iframe as HTMLIFrameElement,
+    {
       action: "hash",
       value: password,
       salt: key.salt,
-    };
-    if (iframe) {
-      window.addEventListener("message", (response) => {
-        resolve(response.data.response);
-      });
-      // @ts-expect-error bad typings
-      iframe.contentWindow.postMessage(message, "*");
     }
-  });
+  );
 
   // https://passlib.readthedocs.io/en/stable/lib/passlib.hash.argon2.html#format-algorithm
   const possibleHash = rawHash.split("$")[5];
@@ -167,21 +169,12 @@ async function findAndUnlockKey(
 
   // verify user password by comparing their password hash with the
   // hash of their password's hash
-  const isCorrectPassword = await new Promise(
-    (resolve: (value: string) => void) => {
-      const iframe = document.getElementById("argon-sandbox");
-      const message = {
-        action: "verify",
-        value: possibleHash,
-        hash: key.hash,
-      };
-      if (iframe) {
-        window.addEventListener("message", (response) => {
-          resolve(response.data.response);
-        });
-        // @ts-expect-error bad typings
-        iframe.contentWindow.postMessage(message, "*");
-      }
+  const isCorrectPassword = await postMessageToArgonSandbox<boolean>(
+    iframe as HTMLIFrameElement,
+    {
+      action: "verify",
+      value: possibleHash,
+      hash: key.hash,
     }
   );
 
@@ -193,15 +186,31 @@ async function findAndUnlockKey(
 }
 
 export async function getEntryDataFromOTPAuthPerLine(importCode: string) {
+  if (importCode.length > MAX_BACKUP_IMPORT_TEXT_CHARS) {
+    return { exportData: {}, failedCount: 1, succeededCount: 0 };
+  }
+
   const lines = importCode.split("\n");
+  if (lines.length > MAX_OTPAUTH_IMPORT_LINES) {
+    return {
+      exportData: {},
+      failedCount: lines.length,
+      succeededCount: 0,
+    };
+  }
+
   const exportData: { [hash: string]: RawOTPStorage } = {};
   let failedCount = 0;
   let succeededCount = 0;
-  for (let item of lines) {
-    item = item.trim();
+  for (let i = 0; i < lines.length; i++) {
+    let item = lines[i].trim();
     if (item.startsWith("otpauth-migration:")) {
       const migrationData = getOTPAuthPerLineFromOPTAuthMigration(item);
       for (const line of migrationData) {
+        if (lines.length >= MAX_OTPAUTH_IMPORT_LINES) {
+          failedCount++;
+          break;
+        }
         lines.push(line);
       }
       continue;

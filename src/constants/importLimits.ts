@@ -13,5 +13,8 @@ export const MAX_BACKUP_IMPORT_FILE_BYTES = 10 * 1024 * 1024;
 /** バックアップテキスト貼り付けの最大文字数 */
 export const MAX_BACKUP_IMPORT_TEXT_CHARS = 2 * 1024 * 1024;
 
+/** JSON/テキストとして読み込んだバックアップの最大文字数（readAsText 結果） */
+export const MAX_BACKUP_JSON_STRING_CHARS = 20 * 1024 * 1024;
+
 /** otpauth 行インポートの最大行数（DoS防止） */
 export const MAX_OTPAUTH_IMPORT_LINES = 10_000;

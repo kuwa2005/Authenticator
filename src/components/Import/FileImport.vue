@@ -28,6 +28,10 @@ import {
 } from "../../import";
 import { EntryStorage } from "../../models/storage";
 import { Encryption } from "../../models/encryption";
+import {
+  MAX_BACKUP_IMPORT_FILE_BYTES,
+  MAX_BACKUP_JSON_STRING_CHARS,
+} from "../../constants/importLimits";
 
 export default Vue.extend({
   data: function () {
@@ -44,8 +48,21 @@ export default Vue.extend({
         return;
       }
       if (target.files[0]) {
+        if (target.files[0].size > MAX_BACKUP_IMPORT_FILE_BYTES) {
+          alert(this.i18n.migration_fail);
+          if (closeWindow) {
+            window.close();
+          }
+          return;
+        }
         const reader = new FileReader();
         let decryptedFileData: { [hash: string]: RawOTPStorage } = {};
+        reader.onerror = () => {
+          alert(this.i18n.migration_fail);
+          if (closeWindow) {
+            window.close();
+          }
+        };
         reader.onload = async () => {
           let importData: {
             // @ts-ignore
@@ -59,16 +76,22 @@ export default Vue.extend({
           } = {};
           let failedCount = 0;
           let succeededCount = 0;
+          const rawText = reader.result as string;
+          if (rawText.length > MAX_BACKUP_JSON_STRING_CHARS) {
+            alert(this.i18n.migration_fail);
+            if (closeWindow) {
+              window.close();
+            }
+            return;
+          }
           try {
-            importData = JSON.parse(reader.result as string);
+            importData = JSON.parse(rawText);
             succeededCount = Object.keys(importData).filter(
               (key) => ["key", "enc", "hash"].indexOf(key) === -1
             ).length;
           } catch (e) {
             console.warn(e);
-            const result = await getEntryDataFromOTPAuthPerLine(
-              reader.result as string
-            );
+            const result = await getEntryDataFromOTPAuthPerLine(rawText);
             importData = result.exportData;
             failedCount = result.failedCount;
             succeededCount = result.succeededCount;

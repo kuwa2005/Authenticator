@@ -34,6 +34,7 @@ import {
 } from "../../import";
 import { EntryStorage } from "../../models/storage";
 import { Encryption } from "../../models/encryption";
+import { MAX_BACKUP_IMPORT_TEXT_CHARS } from "../../constants/importLimits";
 
 export default Vue.extend({
   data: function () {
@@ -45,6 +46,10 @@ export default Vue.extend({
   },
   methods: {
     async importBackupCode() {
+      if (this.importCode.length > MAX_BACKUP_IMPORT_TEXT_CHARS) {
+        alert(this.i18n.updateFailure);
+        return;
+      }
       let exportData: {
         // @ts-ignore
         key?: { enc: string; hash: string };

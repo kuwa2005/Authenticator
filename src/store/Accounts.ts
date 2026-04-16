@@ -7,6 +7,7 @@ import { getSiteName, getMatchedEntriesHash } from "../utils";
 import { isChromium } from "../browser";
 import { StorageLocation, UserSettings } from "../models/settings";
 import { DataType } from "../models/otp";
+import { postMessageToArgonSandbox } from "../utils/argonSandbox";
 
 const LegacyEncryption = "LegacyEncryption";
 export class Accounts implements Module {
@@ -235,21 +236,16 @@ export class Accounts implements Module {
             // --- handle v2 encryption
             // decrypt using key
             const key = CryptoJS.AES.decrypt(encKeys.enc, password).toString();
-            const isCorrectPassword = await new Promise(
-              (resolve: (value: string) => void) => {
-                const iframe = document.getElementById("argon-sandbox");
-                const message = {
-                  action: "verify",
-                  value: key,
-                  hash: encKeys.hash,
-                };
-                if (iframe) {
-                  window.addEventListener("message", (response) => {
-                    resolve(response.data.response);
-                  });
-                  // @ts-expect-error - bad typings
-                  iframe.contentWindow.postMessage(message, "*");
-                }
+            const iframeV2 = document.getElementById("argon-sandbox");
+            if (!iframeV2) {
+              throw new Error("argon-sandbox missing!");
+            }
+            const isCorrectPassword = await postMessageToArgonSandbox<boolean>(
+              iframeV2 as HTMLIFrameElement,
+              {
+                action: "verify",
+                value: key,
+                hash: encKeys.hash,
               }
             );
 
@@ -288,22 +284,17 @@ export class Accounts implements Module {
           } else {
             // --- handle v3 encryption
             // TODO: let user reconcile multiple keys from sync conflicts
+            const iframeV3 = document.getElementById("argon-sandbox");
+            if (!iframeV3) {
+              throw new Error("argon-sandbox missing!");
+            }
             for (const key of encKeys) {
-              const rawHash = await new Promise(
-                (resolve: (value: string) => void) => {
-                  const iframe = document.getElementById("argon-sandbox");
-                  const message = {
-                    action: "hash",
-                    value: password,
-                    salt: key.salt,
-                  };
-                  if (iframe) {
-                    window.addEventListener("message", (response) => {
-                      resolve(response.data.response);
-                    });
-                    // @ts-expect-error bad typings
-                    iframe.contentWindow.postMessage(message, "*");
-                  }
+              const rawHash = await postMessageToArgonSandbox<string>(
+                iframeV3 as HTMLIFrameElement,
+                {
+                  action: "hash",
+                  value: password,
+                  salt: key.salt,
                 }
               );
 
@@ -315,21 +306,12 @@ export class Accounts implements Module {
 
               // verify user password by comparing their password hash with the
               // hash of their password's hash
-              const isCorrectPassword = await new Promise(
-                (resolve: (value: string) => void) => {
-                  const iframe = document.getElementById("argon-sandbox");
-                  const message = {
-                    action: "verify",
-                    value: possibleHash,
-                    hash: key.hash,
-                  };
-                  if (iframe) {
-                    window.addEventListener("message", (response) => {
-                      resolve(response.data.response);
-                    });
-                    // @ts-expect-error bad typings
-                    iframe.contentWindow.postMessage(message, "*");
-                  }
+              const isCorrectPassword = await postMessageToArgonSandbox<boolean>(
+                iframeV3 as HTMLIFrameElement,
+                {
+                  action: "verify",
+                  value: possibleHash,
+                  hash: key.hash,
                 }
               );
 
@@ -702,19 +684,13 @@ async function genHash(value: string) {
     salt += byte.toString(16);
   }
 
-  return new Promise((resolve: (value: string) => void) => {
-    const iframe = document.getElementById("argon-sandbox");
-    const message = {
-      action: "hash",
-      value: value,
-      salt,
-    };
-    if (iframe) {
-      window.addEventListener("message", (response) => {
-        resolve(response.data.response);
-      });
-      // @ts-expect-error bad typings
-      iframe.contentWindow.postMessage(message, "*");
-    }
+  const iframe = document.getElementById("argon-sandbox");
+  if (!iframe) {
+    throw new Error("argon-sandbox missing!");
+  }
+  return postMessageToArgonSandbox<string>(iframe as HTMLIFrameElement, {
+    action: "hash",
+    value: value,
+    salt,
   });
 }
