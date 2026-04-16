@@ -20,6 +20,11 @@ import jsQR from "jsqr";
 import { getEntryDataFromOTPAuthPerLine } from "../../import";
 import { EntryStorage } from "../../models/storage";
 import { Encryption } from "../../models/encryption";
+import {
+  MAX_QR_DECODE_EDGE_PX,
+  MAX_QR_IMAGE_FILE_BYTES,
+  MAX_QR_IMAGE_FILES_PER_BATCH,
+} from "../../constants/importLimits";
 
 export default Vue.extend({
   methods: {
@@ -29,10 +34,21 @@ export default Vue.extend({
         return;
       }
       if (target.files.length) {
+        if (target.files.length > MAX_QR_IMAGE_FILES_PER_BATCH) {
+          alert(this.i18n.updateFailure);
+          if (closeWindow) {
+            window.close();
+          }
+          return;
+        }
         const otpUrlList: string[] = [];
         let hasFailedResults = false;
         for (let fileIndex = 0; fileIndex < target.files.length; fileIndex++) {
           const file = target.files[fileIndex];
+          if (file.size > MAX_QR_IMAGE_FILE_BYTES) {
+            hasFailedResults = true;
+            continue;
+          }
           const otpUrl = await getOtpUrlFromQrFile(file);
           if (otpUrl !== null) {
             otpUrlList.push(otpUrl);
@@ -93,8 +109,12 @@ export default Vue.extend({
 });
 
 async function getOtpUrlFromQrFile(file: File): Promise<string | null> {
+  if (file.size > MAX_QR_IMAGE_FILE_BYTES) {
+    return null;
+  }
   return new Promise((resolve) => {
     const reader = new FileReader();
+    reader.onerror = () => resolve(null);
     reader.onload = () => {
       const imageUrl = reader.result as string;
       const qrReader = new QRCode();
@@ -114,22 +134,23 @@ async function getOtpUrlFromQrFile(file: File): Promise<string | null> {
           console.error(error);
 
           const image: HTMLImageElement = document.createElement("img");
+          image.onerror = () => resolve(null);
           image.onload = () => {
             const canvas: HTMLCanvasElement = document.createElement("canvas");
             const ctx: CanvasRenderingContext2D = canvas.getContext(
               "2d"
             ) as CanvasRenderingContext2D;
 
-            canvas.width = image.width;
-            canvas.height = image.height;
-            ctx.drawImage(image, 0, 0);
-
-            const qrImageData = ctx.getImageData(
-              0,
-              0,
-              canvas.width,
-              canvas.height
+            const { w, h } = scaleImageToMaxEdge(
+              image.naturalWidth || image.width,
+              image.naturalHeight || image.height,
+              MAX_QR_DECODE_EDGE_PX
             );
+            canvas.width = w;
+            canvas.height = h;
+            ctx.drawImage(image, 0, 0, w, h);
+
+            const qrImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const jsQrCode = jsQR(
               qrImageData.data,
               canvas.width,
@@ -163,5 +184,23 @@ async function getOtpUrlFromQrFile(file: File): Promise<string | null> {
     };
     reader.readAsDataURL(file);
   });
+}
+
+function scaleImageToMaxEdge(
+  width: number,
+  height: number,
+  maxEdge: number
+): { w: number; h: number } {
+  if (!width || !height || width < 1 || height < 1) {
+    return { w: 1, h: 1 };
+  }
+  if (width <= maxEdge && height <= maxEdge) {
+    return { w: width, h: height };
+  }
+  const scale = Math.min(maxEdge / width, maxEdge / height);
+  return {
+    w: Math.max(1, Math.floor(width * scale)),
+    h: Math.max(1, Math.floor(height * scale)),
+  };
 }
 </script>
