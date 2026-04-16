@@ -1,14 +1,15 @@
 name: Bug Report
-description: Report a bug in Authenticator
+description: Report a bug in this maintained fork
 labels:
   - bug
-  - unconfirmed
+  - upstream
 body:
   - type: markdown
     attributes:
       value: |
         Do not use this form to ask about lost codes or accounts!
         Read more [here](https://authenticator.cc/docs/en/lost-codes).
+        This repository is a maintained fork. Please mention if the bug is specific to this fork.
   - type: textarea
     attributes:
       label: Describe the issue
@@ -33,6 +34,6 @@ body:
   - type: input
     attributes:
       label: Extension Version
-      description: The extension version is found by clicking the cog at the top left and looking at the bottom of the page.
+      description: Please provide the fork release tag (for example, fork-v8.0.3) or the commit hash.
     validations:
       required: true

@@ -2,6 +2,30 @@
 
 > Authenticator generates 2-Step Verification codes in your browser.
 
+## Fork Maintenance Notice
+
+This fork (`kuwa2005/Authenticator`) is actively maintained.
+The original upstream repository is no longer used as the primary maintenance target for this fork.
+
+Please use this repository for:
+- bug reports
+- security reports
+- feature requests
+- release tracking
+
+## Release Tag Policy
+
+Fork releases use the tag format:
+
+`fork-v<major>.<minor>.<patch>`
+
+Example: `fork-v8.0.3`
+
+Rules:
+- Tags are created only from the `dev` branch after validation.
+- Security-only releases may increment patch only (for example, `fork-v8.0.4`).
+- Release notes should summarize fork-specific changes and mention security-impacting fixes.
+
 ## Available for Chrome, Firefox, and Microsoft Edge
 
 [<img src="https://raw.githubusercontent.com/wiki/Authenticator-Extension/Authenticator/readme-images/chrome-web-store.png" title="Chrome Web Store" width="170" height="48" />](https://chrome.google.com/webstore/detail/authenticator/bhghoamapcdpbohphigoooaddinpkbai) [<img src="https://raw.githubusercontent.com/wiki/Authenticator-Extension/Authenticator/readme-images/firefox-add-ons.png" title="Firefox Add-ons" width="170" height="48" />](https://addons.mozilla.org/en-US/firefox/addon/auth-helper?src=external-github) [<img src="https://raw.githubusercontent.com/wiki/Authenticator-Extension/Authenticator/readme-images/microsoft-store.png" title="Microsoft Store" height="48">](https://microsoftedge.microsoft.com/addons/detail/ocglkepbibnalbgmbachknglpdipeoio)

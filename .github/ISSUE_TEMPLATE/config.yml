@@ -1,7 +1,10 @@
 contact_links:
   - name: Feature Request
-    url: https://github.com/Authenticator-Extension/Authenticator/discussions/new
-    about: Please request features here.
+    url: https://github.com/kuwa2005/Authenticator/issues/new
+    about: Please request features in this fork.
   - name: Translation Issues
     url: https://crowdin.com/project/authenticator-firefox
     about: Please correct translation issues on Crowdin.
+  - name: Security Vulnerability Report
+    url: https://github.com/kuwa2005/Authenticator/security/advisories/new
+    about: Please report vulnerabilities privately via this fork's advisory page.
