@@ -174,7 +174,10 @@ async function getTotp(text: string, silent = false) {
           digits = Number(parameter[1]);
           digits = isNaN(digits) || digits === 0 ? 6 : digits;
         } else if (parameter[0].toLowerCase() === "algorithm") {
-          algorithm = parameter[1];
+          const rawAlgorithm = decodeURIComponent(parameter[1] || "").toUpperCase();
+          if (["SHA1", "SHA256", "SHA512"].includes(rawAlgorithm)) {
+            algorithm = rawAlgorithm;
+          }
         }
       });
 
