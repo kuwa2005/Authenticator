@@ -1,0 +1,12 @@
+---
+description: 上流 Authenticator-Extension へ PR や push をしない
+alwaysApply: true
+---
+
+# 上流へ PR しない
+
+このリポジトリ（`kuwa2005/Authenticator`）は独立して保守する。上流 `Authenticator-Extension/Authenticator` へ Pull Request を作らない。
+
+- `gh pr create` の対象は `kuwa2005/Authenticator` だけ。`--repo Authenticator-Extension/Authenticator` は使わない。
+- `Authenticator-Extension/Authenticator` への `git push` や、その URL の upstream リモート追加をしない。
+- 変更を PR にする場合は、このリポジトリの `main` 向けに限る。

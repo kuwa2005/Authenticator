@@ -1,5 +1,5 @@
-name: Bug Report
-description: Report a bug in this maintained fork
+name: 不具合報告
+description: このフォークの不具合を報告する
 labels:
   - bug
   - upstream
@@ -7,33 +7,33 @@ body:
   - type: markdown
     attributes:
       value: |
-        Do not use this form to ask about lost codes or accounts!
-        Read more [here](https://authenticator.cc/docs/en/lost-codes).
-        This repository is a maintained fork. Please mention if the bug is specific to this fork.
+        コードやアカウントの紛失については、このフォームを使わないでください。
+        詳細は[こちら](https://authenticator.cc/docs/en/lost-codes)を読んでください。
+        このリポジトリは保守中のフォークです。このフォーク固有の不具合かどうかを書いてください。
   - type: textarea
     attributes:
-      label: Describe the issue
-      description: Include detailed steps to reproduce the issue if appropriate.
+      label: 不具合の内容
+      description: 再現できる場合は、手順も書いてください。
     validations:
       required: true
   - type: dropdown
     attributes:
-      label: Browser
+      label: ブラウザ
       options:
         - Chrome
         - Firefox
         - Edge
-        - Other
+        - その他
     validations:
       required: true
   - type: input
     attributes:
-      label: Browser Version
+      label: ブラウザのバージョン
     validations:
       required: true
   - type: input
     attributes:
-      label: Extension Version
-      description: Please provide the fork release tag (for example, fork-v8.0.3) or the commit hash.
+      label: 拡張機能のバージョン
+      description: フォークのリリースタグ（例: fork-v8.0.3）か、コミットハッシュを書いてください。
     validations:
       required: true

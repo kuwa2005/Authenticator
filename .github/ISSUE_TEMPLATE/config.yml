@@ -1,10 +1,10 @@
 contact_links:
-  - name: Feature Request
+  - name: 機能要望
     url: https://github.com/kuwa2005/Authenticator/issues/new
-    about: Please request features in this fork.
-  - name: Translation Issues
+    about: 機能要望はこのフォークの Issue に書いてください。
+  - name: 翻訳
     url: https://crowdin.com/project/authenticator-firefox
-    about: Please correct translation issues on Crowdin.
-  - name: Security Vulnerability Report
+    about: 翻訳の修正は Crowdin で行ってください。
+  - name: 脆弱性の報告
     url: https://github.com/kuwa2005/Authenticator/security/advisories/new
-    about: Please report vulnerabilities privately via this fork's advisory page.
+    about: 脆弱性はこのフォークの Security Advisory から非公開で送ってください。

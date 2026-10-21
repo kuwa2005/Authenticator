@@ -39,15 +39,19 @@ if ! [[ $CREDS =~ $CREDREGEX ]] ; then
     fi
 fi
 
-if ! [[ $REMOTE = *"https://github.com/Authenticator-Extension/Authenticator.git"* || $REMOTE = *"git@github.com:Authenticator-Extension/Authenticator.git"* || $CI ]] ; then
+# Official upstream and this maintained fork should build non-interactively.
+# Other forks still get a reminder to use their own API keys, but never block CI / pipes.
+if ! [[ $REMOTE = *"Authenticator-Extension/Authenticator.git"* || $REMOTE = *"kuwa2005/Authenticator.git"* || $CI ]] ; then
     echo
     echo -e "\e[7m\033[33mNotice\033[0m"
     echo
-    echo -e "Thanks for forking Authenticator! If you plan on redistributing your own version of Authenticator please generate your own API keys and put them in ./src/models/credentials.ts and ./manifest-chrome.json"
+    echo -e "Thanks for forking Authenticator! If you plan on redistributing your own version of Authenticator please generate your own API keys and put them in ./src/models/credentials.ts and ./manifests/manifest-chrome.json"
     echo "Clear this warning by commenting it out in ./scripts/build.sh"
     echo
-    read -rsp $'Press any key to continue...\n' -n1 key
-    echo
+    if [[ -t 0 ]]; then
+        read -rsp $'Press any key to continue...\n' -n1 key
+        echo
+    fi
 fi
 
 echo "Compiling..."
@@ -103,3 +107,21 @@ else
 fi
 
 echo -e "\033[0;32mDone!\033[0m"
+case $PLATFORM in
+    chrome)
+        echo "Load unpacked in Chrome from: $(pwd)/chrome"
+        echo "Do not select the repository root — it has no manifest.json."
+        ;;
+    firefox)
+        echo "Load in Firefox from: $(pwd)/firefox"
+        ;;
+    edge)
+        echo "Load unpacked in Edge from: $(pwd)/edge"
+        ;;
+    test)
+        echo "Test builds: $(pwd)/test/chrome and $(pwd)/test/firefox"
+        ;;
+    prod)
+        echo "Release builds: $(pwd)/release/{chrome,firefox,edge}"
+        ;;
+esac

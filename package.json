@@ -1,10 +1,10 @@
 {
   "name": "authenticator-extension",
   "version": "0.1.0",
-  "description": "Authenticator generates 2-Step Verification codes in your browser.",
+  "description": "ブラウザ上で2段階認証コードを生成します。",
   "scripts": {
     "compile": "bash scripts/build.sh firefox",
-    "dev:chrome": "npm run pretest && webpack --config ./webpack.watch.js",
+    "dev:chrome": "bash scripts/build.sh chrome && webpack --config ./webpack.watch.js",
     "chrome": "bash scripts/build.sh chrome",
     "firefox": "bash scripts/build.sh firefox",
     "edge": "bash scripts/build.sh edge",
@@ -14,14 +14,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Authenticator-Extension/Authenticator.git"
+    "url": "git+https://github.com/kuwa2005/Authenticator.git"
   },
   "author": "Authenticator Extension",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Authenticator-Extension/Authenticator/issues"
+    "url": "https://github.com/kuwa2005/Authenticator/issues"
   },
-  "homepage": "https://github.com/Authenticator-Extension/Authenticator#readme",
+  "homepage": "https://github.com/kuwa2005/Authenticator#readme",
   "devDependencies": {
     "@types/argon2-browser": "^1.18.1",
     "@types/chai": "^4.2.14",

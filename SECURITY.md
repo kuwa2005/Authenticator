@@ -1,21 +1,24 @@
-# Security Policy
+# セキュリティポリシー
 
-## Supported Versions
+[English](SECURITY.en.md)
 
-We support the latest release tags published from this fork, following:
+## 対象バージョン
+
+このフォークが公開した最新のリリースタグを対象にします。
 
 `fork-v<major>.<minor>.<patch>`
 
-Only the most recent fork release is guaranteed to receive security fixes.
+セキュリティ修正を保証するのは、最新のフォークリリースだけです。
 
-## Reporting a Vulnerability
+## 脆弱性の報告
 
-Report potential vulnerabilities privately via [GitHub Security Advisories for this fork](https://github.com/kuwa2005/Authenticator/security/advisories/new).
+脆弱性の可能性は、[このフォークの GitHub Security Advisories](https://github.com/kuwa2005/Authenticator/security/advisories/new) から非公開で送ってください。
 
-Include:
-- affected version (`fork-vX.Y.Z`)
-- reproduction steps
-- impact assessment
-- proof-of-concept (if available)
+含めてほしい内容:
 
-Target response time is within five days, best effort.
+- 影響を受けるバージョン（`fork-vX.Y.Z`）
+- 再現手順
+- 影響の見積もり
+- 概念実証（あれば）
+
+初回の返答目標は5日以内です。確約ではなく、最善を尽くす目安です。

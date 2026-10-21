@@ -8,6 +8,8 @@ dist
 .atom-build.yml
 scripts/authenticator-build-key.enc
 cert.pfx
+*.pem
+*.crx
 css
 .license-gen-tmp
 view/licenses.html
