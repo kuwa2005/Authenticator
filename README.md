@@ -22,7 +22,7 @@ Fork releases use the tag format:
 Example: `fork-v8.0.3`
 
 Rules:
-- Tags are created only from the `dev` branch after validation.
+- Tags are created only from the `main` branch after validation.
 - Security-only releases may increment patch only (for example, `fork-v8.0.4`).
 - Release notes should summarize fork-specific changes and mention security-impacting fixes.
 
