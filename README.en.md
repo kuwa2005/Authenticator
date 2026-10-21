@@ -45,23 +45,23 @@ A Safari edition is on the App Store. This fork does not officially support it.
 
 ## Load in Chrome
 
-The repository root has no `manifest.json`. Chrome only reads `manifest.json` in the folder you select. Loading the source tree reports that the manifest file is missing or unreadable.
+The repository root has no `manifest.json`. Chrome only reads `manifest.json` in the folder you select. Loading the cloned directory itself reports that the manifest file is missing or unreadable.
 
-Load the built `chrome/` directory.
-
-```bash
-npm install
-npm run chrome
-```
-
-Then in Chrome:
+The built extension is already in `chrome/`. After cloning, load that folder without building.
 
 1. Open `chrome://extensions`
 2. Turn on Developer mode
 3. Click **Load unpacked**
 4. Select this repository's `chrome` directory (the folder that contains `manifest.json`)
 
-If you built the extension in WSL, point Windows Chrome at the `chrome` folder inside WSL.
+After you change the source, refresh that folder with:
+
+```bash
+npm install
+npm run chrome
+```
+
+On Windows, build from [Git Bash](https://git-scm.com/download/win) or [Cygwin](http://cygwin.com/).
 
 To rebuild JavaScript while developing:
 

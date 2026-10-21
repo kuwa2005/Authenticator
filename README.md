@@ -43,23 +43,25 @@ Safari 版は App Store にあります。このフォークでは Safari 版を
 
 ## Chrome に読み込む
 
-リポジトリ直下には `manifest.json` がありません。Chrome は、選んだフォルダの直下にある `manifest.json` だけを見ます。ソースツリーを「パッケージ化されていない拡張機能を読み込む」で指定すると、「マニフェスト ファイルが見つからないか、または読み取れません」となります。
+リポジトリ直下には `manifest.json` がありません。Chrome は、選んだフォルダの直下にある `manifest.json` だけを見ます。クローンしたディレクトリ自体を指定すると、「マニフェスト ファイルが見つからないか、または読み取れません」となります。
 
-読み込むのは、ビルド後にできる `chrome/` です。
+ビルド済みの拡張機能は `chrome/` に入っています。クローンしたあと、追加のビルドなしでこのフォルダを読み込めます。
 
-```bash
-npm install
-npm run chrome
-```
-
-その後、Chrome で次の操作をします。
+Chrome で次の操作をします。
 
 1. `chrome://extensions` を開く
 2. デベロッパーモードをオンにする
 3. 「パッケージ化されていない拡張機能を読み込む」を押す
 4. このリポジトリの `chrome` ディレクトリを選ぶ（`manifest.json` があるフォルダ）
 
-WSL 上でビルドした場合は、Windows の Chrome から WSL 内の `chrome` フォルダを指定します。
+ソースを変更したあとに読み込み用のフォルダを更新する場合:
+
+```bash
+npm install
+npm run chrome
+```
+
+Windows でビルドする場合は、[Git Bash](https://git-scm.com/download/win) か [Cygwin](http://cygwin.com/) を使います。
 
 開発中に JavaScript だけ再ビルドする場合:
 
